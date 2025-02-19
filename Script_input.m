@@ -687,6 +687,28 @@ end
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+function result = flatten_Fi_cell(cell_to_flatten)
+
+    flat_cell = cell(size(cell_to_flatten,1), 4);
+    
+    for i = 1:size(cell_to_flatten,1)
+        inner_cell = cell_to_flatten{i,1};
+        outputs = cell_to_flatten{i,2};
+
+        flat_cell{i,1} = inner_cell{1};
+        flat_cell{i,2} = inner_cell{2};
+        flat_cell{i,3} = inner_cell{3};
+        for j = 1:size(outputs,1)
+            flat_cell{i,3+j} = outputs(j,:);
+        end
+        
+    end
+
+    result = flat_cell;
+end
+
+% ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
+
 function result = unflatten_Fi_cell(cell_to_unflatten, state_i_length, state_3_i_length, input_length)
 
     original_cell = cell(size(cell_to_unflatten,1), 2);
@@ -895,7 +917,7 @@ function result = read_plant_spec_outputs(filename, pi_states)
 
         correct = true;
         for i = 1:size(matrix, 1)
-            if ~( ismember(matrix(i, :), pi_states, 'rows') || all(isnan(matrix(i,:))) )
+            if ~ismember(matrix(i, :), pi_states, 'rows')
                 disp("(One or more output values do not match previously given plant states)");
                 filename = input("Please provide another filename: ", "s");
                 correct = false; 
@@ -922,7 +944,7 @@ function result = create_plant_spec_outputs(qi_states, pi_states)
         while true
             temp = input("Please insert the output for state <strong>" + string(qi_states{i}) + "</strong> :");
             if isnumeric(temp)
-                if ( length(temp) == size(pi_states,2) && ismember(temp, pi_states, "rows") ) || ismissing(temp)
+                if ( length(temp) == size(pi_states,2) && ismember(temp, pi_states, "rows") )
                     break;
                 else
                     disp("(Given output is not a valid plant state.)");
