@@ -687,28 +687,6 @@ end
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-function result = flatten_Fi_cell(cell_to_flatten)
-
-    flat_cell = cell(size(cell_to_flatten,1), 4);
-    
-    for i = 1:size(cell_to_flatten,1)
-        inner_cell = cell_to_flatten{i,1};
-        outputs = cell_to_flatten{i,2};
-
-        flat_cell{i,1} = inner_cell{1};
-        flat_cell{i,2} = inner_cell{2};
-        flat_cell{i,3} = inner_cell{3};
-        for j = 1:size(outputs,1)
-            flat_cell{i,3+j} = outputs(j,:);
-        end
-        
-    end
-
-    result = flat_cell;
-end
-
-% ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~ ~
-
 function result = unflatten_Fi_cell(cell_to_unflatten, state_i_length, state_3_i_length, input_length)
 
     original_cell = cell(size(cell_to_unflatten,1), 2);
