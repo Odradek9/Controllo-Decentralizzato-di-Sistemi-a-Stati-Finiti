@@ -96,8 +96,8 @@ for i = 1:size(plant_1_initial_states,1)
                 
                 temp = {plant_1_initial_states(i,:), spec_initial_states_1(q1_0), plant_2_initial_states(j,:), spec_initial_states_2(q2_0)};
                 Xc0_index = 0;
-                for i = 1:size(Xc, 1)
-                    if isequal(Xc(i, :), temp)
+                for ii = 1:size(Xc, 1)
+                    if isequal(Xc(ii, :), temp)
                         Xc0_index = 1;
                         break;
                     end
@@ -486,12 +486,9 @@ clearvars -except Tc Xc Xc0 Hc Yc Xcm Uc Xc0_str Xcm_str Xc_str ...
 
 % Funzione matrica d
 function distance = d(m, n)
-    %%% DA RIMUOVERE IL CONTROLLO PER NAN NEL PROGRAMMA COMPLETO
-    if isnan(n)
-        distance = 0;
-    else
-        distance = norm(m-n);
-    end
+
+    distance = norm(m-n);
+
 end
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
