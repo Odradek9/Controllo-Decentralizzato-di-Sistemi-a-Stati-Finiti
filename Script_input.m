@@ -173,7 +173,6 @@ for p = 1:2
     %----------------------------------------------------------------------
 
     pi_transition_table = containers.Map;
-    pi_transition_table("inputs") = pi_inputs;
 
     for ps = 1:size(pi_states,1)
         values = containers.Map;
@@ -387,7 +386,6 @@ for p = 1:2
     % Creazione della mappa rappresentante il sistema di transizione
     
     specification_transition_table_Qi = containers.Map;
-    specification_transition_table_Qi("inputs") = mat2cell(qi_inputs, 1, ones(1, numel(qi_inputs)));
     for i = 1:number_of_states_qi
         %complete_successor_vector = strings(number_of_inputs_qi,0);
         complete_successor_vector = cell(0,2);
@@ -560,7 +558,7 @@ function result = create_transition_matrix_qi(states, inputs)
         
                 if ismatrix(next_states)
         
-                    % Controllo se il vettore dat0 è 
+                    % Controllo se il vettore dato è 
                     % sotto-vettore del vettore degli stati
         
                     % Se abbiamo un sotto-vettore valido, andiamo a

@@ -6,12 +6,6 @@ clc; close all;
 
 %--------------------------------------------------------------------------
 
-% Funzione usata in altri cellfun per la ricerca dell'indice della riga che
-% si vuole trovare in un altro cell array
-%fun = @(A,B)cellfun(@isequal,A,B);
-
-%--------------------------------------------------------------------------
-
 %%% CREAZIONE STATI Xc
 
 h = waitbar(0, "Calculating all valid Xc states...");
@@ -24,19 +18,10 @@ plant_1_states = plants_states{1};
 plant_2_states = plants_states{2};
 
 total_specification_states_1 = specification_states{1};
-% total_specification_states_1 = keys(specification_transition_tables{1});
-% in_index_1 = find(strcmp("inputs", total_specification_states_1));
-% total_specification_states_1(in_index_1) = [];
-% 
-% total_specification_states_2 = keys(specification_transition_tables{2});
-% in_index_2 = find(strcmp("inputs", total_specification_states_2));
-% total_specification_states_2(in_index_2) = [];
 total_specification_states_2 = specification_states{2};
 
 specification_1_output_matrix = specification_state_output_cell_matrices{1};
 specification_2_output_matrix = specification_state_output_cell_matrices{2};
-
-% Da considerare una riscrittura usando "meshgrid" o funzioni simili
 
 for i = 1:size(plant_1_states,1)
     state_1 = plant_1_states(i,:);
@@ -184,7 +169,6 @@ end
 
 waitbar(5/8, h ,"Calculating state-output function Hc...");
 
-%%% DA VERIFICARE CHE FUNZIONA
 Hc = cell(size(Xc,1), 2);
 c = 1;
 Hq1 = specification_state_output_cell_matrices{1};
@@ -192,11 +176,15 @@ Hq2 = specification_state_output_cell_matrices{2};
 for i = 1:size(Xc,1)
     tuple = { Xc{i,:} };
     Hc{i,1} = tuple;
-    % Parentesi quadre per far funzionare il find
+
+    % Parentesi quadre per il find
     Hq1_spec_states = [Hq1{:,1}];
+
     index_1 = find(Hq1_spec_states == tuple{2});
-    % Parentesi quadre per far funzionare il find
+
+    % Parentesi quadre per il find
     Hq2_spec_states = [Hq2{:,1}];
+
     index_2 = find(Hq1_spec_states == tuple{4});
     Hc{i,2} = {Hq1{index_1, 2}, Hq2{index_2, 2}};
 end
@@ -212,23 +200,18 @@ P2_t_s = plants_transition_tables{2};
 Q1_t_s = specification_transition_tables{1};
 Q2_t_s = specification_transition_tables{2};
 
-%tic;
 Tc = containers.Map;
-Tc("inputs") = Uc;
 
 progress_bar_step = size(Xc,1)/10;
 tick = 0;
 
 for i = 1:size(Xc,1)
     
-    % To remove, not needed but it's cute
     if fix(i/progress_bar_step) > tick
         tick = fix(i/progress_bar_step);
         waitbar((6+(tick*0.1))/8, h ,"Processing transition system Tc...");
     end
     
-    %disp(i)
-
     Xc_state = { Xc{i,:} };
     Xc_state_str = string(join(cellfun(@(x) num2str(x), Xc_state, 'UniformOutput', false), ', '));
 
@@ -311,7 +294,12 @@ for i = 1:size(Xc,1)
         end
 
         if x1_index ~= 0
-            x1_cut_succ = x1_succ(x1_index,2);
+
+            temp = x1_succ{x1_index,2};
+            x1_cut_succ = cell(size(temp, 1),1);
+            for xs = 1:size(temp, 1)
+                x1_cut_succ{xs} = temp(xs,:);
+            end
         end
 
         x2_cut_succ = [];
@@ -331,7 +319,12 @@ for i = 1:size(Xc,1)
         end
         
         if x2_index ~= 0
-            x2_cut_succ = x2_succ(x2_index,2);
+            
+            temp = x2_succ{x2_index,2};
+            x2_cut_succ = cell(size(temp, 1),1);
+            for xs = 1:size(temp, 1)
+                x2_cut_succ{xs} = temp(xs,:);
+            end
         end
 
         Xc_plus_total = {};
@@ -366,7 +359,6 @@ for i = 1:size(Xc,1)
 
                                 else
 
-                                    %all_pred_inputs = [ Xc_state_pred{:,1} ];
                                     input_index = 0;
                                     for api = 1:size(Xc_state_pred,1)
                                         pred_inputs = Xc_state_pred{api,1};
@@ -398,7 +390,6 @@ for i = 1:size(Xc,1)
                                         Xc_plus_pred{1,2} = {Xc_state_str};
                                     else
 
-                                        %all_pred_inputs = [ Xc_plus_pred{:,1} ];
                                         input_index = 0;
                                         for api = 1:size(Xc_plus_pred,1)
                                             pred_inputs = Xc_plus_pred{api,1};
@@ -458,7 +449,6 @@ for i = 1:size(Xc,1)
 
 end
 
-%toc;
 waitbar(7/8, h ,"Trimming transition system Tc...");
 
 Tc = Trim(Tc, Xc0_str, Xcm_str);
@@ -467,6 +457,7 @@ waitbar(1, h ,"Job done.");
 pause(3);
 close(h);
 
+disp("Done.")
 
 clearvars -except Tc Xc Xc0 Hc Yc Xcm Uc Xc0_str Xcm_str Xc_str ...
     plants_states plants_initial_states plants_inputs ...
@@ -484,255 +475,10 @@ clearvars -except Tc Xc Xc0 Hc Yc Xcm Uc Xc0_str Xcm_str Xc_str ...
 
 %~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-% Funzione matrica d
+% Funzione metrica d
 function distance = d(m, n)
 
     distance = norm(m-n);
-
-end
-
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-% Funzione per ottenere la parte accessibile di un transition system
-function result = Ac(transition_table, initial_states)
-    
-    %tic;
-    accessible_states = strings(0);
-    s = 1;
-    % Performiamo una ricerca DTS sul sistema di transizione a partire
-    % dagli stati iniziali
-    % Creamo uno stack dove inseriremo gli stati da visitare, andando
-    % dall'ultimo elemento al primo, aggiungendo stati successivi nuovi ed
-    % eliminando quelli già attraversati
-    stack = initial_states;
-    finished = 0;
-    while ~finished
-        if isempty(stack) || ~isKey(transition_table, stack(end))
-            finished = 1;
-        else
-            value = transition_table( stack(end) );
-            possible_next_states = value("successors");
-
-            num_of_next = size(possible_next_states,1);
-            temp = strings(1, 0);
-            tt = 1;
-            for nn = 1:num_of_next
-                row = possible_next_states{nn,2};
-                for mm = 1:length(row)
-                    temp(tt) = row{mm};
-                    tt = tt+1;
-                end
-            end
-            possible_next_states = temp;
-            
-            if ~any(strcmp(stack(end), accessible_states))
-                accessible_states(s) = stack(end);
-                s = s+1;
-            end
-            stack(end) = [];
-            for l = 1:length(possible_next_states)
-
-                state = possible_next_states(l);
-
-                if ~any(strcmp(state, accessible_states))
-                    stack(end+1) = state;
-                end
-
-            end
-
-        end
-        
-    end
-    
-    all_states = keys(transition_table);
-    in_index = find(strcmp("inputs", all_states));
-    all_states(in_index) = [];
-    non_accessible_states = setxor(all_states, accessible_states);
-    new_transition_table = containers.Map;
-    new_transition_table("inputs") = transition_table("inputs");
-    for i = 1:length(all_states)
-        if any(strcmp(all_states{i}, accessible_states))
-            %remove(transition_table, all_states{i});
-            to_move = transition_table(all_states{i});
-            values = containers.Map;
-            values("initial") = to_move("initial");
-            values("marked") = to_move("marked");
-            values("output") = to_move("output");
-            succ = to_move("successors");
-            size_succ = size(succ,1);
-            for stm = 1:size_succ
-                stm_b = size_succ - stm + 1;
-                row = succ{stm_b,2};
-                len_row = length(row);
-                for tf = 1:len_row
-                    tf_b = len_row - tf + 1;
-                    row_str = row{tf_b};
-                    if any(strcmp(row_str, non_accessible_states))
-                        row(tf_b) = [];
-                    end
-                end
-                if isempty(row)
-                    succ(stm_b,:) = [];
-                else
-                    succ{stm_b,2} = row;
-                end
-            end
-            values("successors") = succ;
-
-            pred = to_move("predecessors");
-            size_pred = size(pred,1);
-            for stm = 1:size_pred
-                stm_b = size_pred - stm + 1;
-                row = pred{stm_b,2};
-                len_row = length(row);
-                for tf = 1:len_row
-                    tf_b = len_row - tf + 1;
-                    row_str = row{tf_b};
-                    if any(strcmp(row_str, non_accessible_states))
-                        row(tf_b) = [];
-                    end
-                end
-                if isempty(row)
-                    pred(stm_b,:) = [];
-                else
-                    pred{stm_b,2} = row;
-                end
-            end
-            values("predecessors") = pred;
-
-            new_transition_table(all_states{i}) = values;
-        end
-    end
-    
-    result = new_transition_table;
-    %toc;
-
-end
-
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-% Funzione per ottenere la parte co-accessibile di un transition system
-function result = CoAc(transition_table, marked_states)
-    
-    %tic;
-    coaccessible_states = strings(0);
-    s = 1;
-    % Performiamo una ricerca DTS sul sistema di transizione a partire
-    % dagli stati marcati
-    % Creamo uno stack dove inseriremo gli stati da visitare, andando
-    % dall'ultimo elemento al primo, aggiungendo stati successivi nuovi ed
-    % eliminando quelli già attraversati
-    stack = marked_states;
-    finished = 0;
-    while ~finished
-        if isempty(stack) || ~isKey(transition_table, stack(end))
-            finished = 1;
-        else
-            value = transition_table( stack(end) );
-            possible_previous_states = value("predecessors");
-
-            num_of_prev = size(possible_previous_states,1);
-            temp = strings(1, 0);
-            tt = 1;
-            for nn = 1:num_of_prev
-                row = possible_previous_states{nn,2};
-                for mm = 1:length(row)
-                    temp(tt) = row{mm};
-                    tt = tt+1;
-                end
-            end
-            possible_previous_states = temp;
-            
-            if ~any(strcmp(stack(end), coaccessible_states))
-                coaccessible_states(s) = stack(end);
-                s = s+1;
-            end
-            stack(end) = [];
-            for l = 1:length(possible_previous_states)
-
-                state = possible_previous_states(l);
-
-                if ~any(strcmp(state, coaccessible_states))
-                    stack(end+1) = state;
-                end
-
-            end
-
-        end
-        
-    end
-    
-    all_states = keys(transition_table);
-    in_index = find(strcmp("inputs", all_states));
-    all_states(in_index) = [];
-    non_coaccessible_states = setxor(all_states, coaccessible_states);
-    new_transition_table = containers.Map;
-    new_transition_table("inputs") = transition_table("inputs");
-    for i = 1:length(all_states)
-        if any(strcmp(all_states{i}, coaccessible_states))
-            to_move = transition_table(all_states{i});
-            values = containers.Map;
-            values("initial") = to_move("initial");
-            values("marked") = to_move("marked");
-            values("output") = to_move("output");
-            succ = to_move("successors");
-            size_succ = size(succ,1);
-            for stm = 1:size_succ
-                stm_b = size_succ - stm + 1;
-                row = succ{stm_b,2};
-                len_row = length(row);
-                for tf = 1:len_row
-                    tf_b = len_row - tf + 1;
-                    row_str = row{tf_b};
-                    if any(strcmp(row_str, non_coaccessible_states))
-                        row(tf_b) = [];
-                    end
-                end
-                if isempty(row)
-                    succ(stm_b,:) = [];
-                else
-                    succ{stm_b,2} = row;
-                end
-            end
-            values("successors") = succ;
-
-            pred = to_move("predecessors");
-            size_pred = size(pred,1);
-            for stm = 1:size_pred
-                stm_b = size_pred - stm + 1;
-                row = pred{stm_b,2};
-                len_row = length(row);
-                for tf = 1:len_row
-                    tf_b = len_row - tf + 1;
-                    row_str = row{tf_b};
-                    if any(strcmp(row_str, non_coaccessible_states))
-                        row(tf_b) = [];
-                    end
-                end
-                if isempty(row)
-                    pred(stm_b,:) = [];
-                else
-                    pred{stm_b,2} = row;
-                end
-            end
-            values("predecessors") = pred;
-
-            new_transition_table(all_states{i}) = values;
-        end
-    end
-    
-    result = new_transition_table;
-    %toc;
-
-end
-
-%~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-% Funzione per ottenere la parte di un transition system contenente solo le
-% traiettorie che vanno dagli stati iniziali agli stati marcati
-function result = Trim(transition_table, initial_states, marked_states)
-
-    result = CoAc(Ac(transition_table, initial_states), marked_states);
 
 end
 
