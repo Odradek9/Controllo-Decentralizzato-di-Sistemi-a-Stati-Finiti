@@ -742,7 +742,7 @@ for atts = 1:length(all_Tc_sub_transition_systems)
        for zs = 1:size(current_Zi,1)
     
            zi_state = current_Zi(zs,:);
-           zi_state_str =   ;
+           zi_state_str = string(join(cellfun(@(x) num2str(x), zi_state, 'UniformOutput', false), ', '));
            values = containers.Map;
            
            if any(cellfun(@(x) isequal(x, zi_state), num2cell(current_Zi0, 2)))
