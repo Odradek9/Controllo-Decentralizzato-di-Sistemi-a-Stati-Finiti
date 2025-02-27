@@ -47,6 +47,9 @@ for i = 1:size(plant_1_states,1)
                     temp = {state_1, spec_state_1, state_2, spec_state_2};
                     Xc_str(c) = string(join(cellfun(@(x) num2str(x), temp, 'UniformOutput', false), ', '));
                     c = c+1;
+                    % if spec_state_2 == "F" && state_2 == 4
+                    %     temp
+                    % end
                 end
             end
 
@@ -215,6 +218,10 @@ for i = 1:size(Xc,1)
     Xc_state = { Xc{i,:} };
     Xc_state_str = string(join(cellfun(@(x) num2str(x), Xc_state, 'UniformOutput', false), ', '));
 
+    % if Xc_state{4} == "E" && Xc_state{3} == 4
+    %     Xc_state_str
+    % end
+
     if isKey(Tc, Xc_state_str)
         c_values = Tc(Xc_state_str);
         Xc_state_pred = c_values("predecessors");
@@ -256,16 +263,16 @@ for i = 1:size(Xc,1)
     x1_spec_values = Q1_t_s(x1_spec_state);
     x1_spec_succ = x1_spec_values("successors");
     if ~isempty(x1_spec_succ)
-        x1_spec_all_succ = x1_spec_succ{:,2};
-        x1_spec_all_succ = [ x1_spec_all_succ{:,:} ];
+        x1_spec_all_succ = [ x1_spec_succ{:,2} ];
+        x1_spec_all_succ = [ x1_spec_all_succ{:} ];
         x1_spec_succ = unique(x1_spec_all_succ);
     end
 
     x2_spec_values = Q2_t_s(x2_spec_state);
     x2_spec_succ = x2_spec_values("successors");
     if ~isempty(x2_spec_succ)
-        x2_spec_all_succ = x2_spec_succ{:,2};
-        x2_spec_all_succ = [ x2_spec_all_succ{:,:} ];
+        x2_spec_all_succ = [ x2_spec_succ{:,2} ];
+        x2_spec_all_succ = [ x2_spec_all_succ{:} ];
         x2_spec_succ = unique(x2_spec_all_succ);
     end
     

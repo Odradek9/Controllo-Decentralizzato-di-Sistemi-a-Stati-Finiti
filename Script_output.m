@@ -778,8 +778,8 @@ for atts = 1:length(all_Tc_sub_transition_systems)
                end
     
                if isequal(first_condition, zi_state)
-                   succ_cell_matrix{1} = second_condition;
-                   succ_cell_matrix{2} = successors_str;
+                   succ_cell_matrix{1,1} = second_condition;
+                   succ_cell_matrix{1,2} = successors_str;
                    break;
                end
            end
